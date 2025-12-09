@@ -1,0 +1,106 @@
+import "./style.css";
+
+class ToDo {
+    constructor (title, description, dueDate, priority) {
+        this.title = title;
+        this.description = description;
+        this.dueDate = dueDate;
+        this.priority = priority;
+        this.id = crypto.randomUUID();
+    }
+}
+
+class ToDoList {
+    constructor () {
+        this.list =[];
+    }
+
+    addToDo(title, description, date, priority) {
+        const toDo = new ToDo (title, description, date, priority);
+        this.list.push(toDo);
+        return toDo;
+    }
+
+    deleteToDo(toDoId) {
+        this.list = this.list.filter(toDo => toDo.id !== toDoId);
+    }
+
+    displayToDoList() {
+        defaultProject.innerHTML = "";
+
+    this.list.forEach(toDo => {
+        const createListElement = document.createElement("li");
+        createListElement.dataset.toDoId = toDo.id;
+
+        const deleteBtn = document.createElement("button");
+            deleteBtn.textContent = "Delete";
+            deleteBtn.className = "delete-btn";
+
+        const editBtn = document.createElement("button");
+            editBtn.textContent = "Edit";
+            editBtn.className = "edit-btn";
+
+        createListElement.textContent = `
+        ${toDo.title}
+        ${toDo.description}
+        Due: ${toDo.dueDate}
+        Priority: ${toDo.priority}
+        `;
+
+        createListElement.appendChild(deleteBtn);
+        createListElement.appendChild(editBtn);
+
+        defaultProject.appendChild(createListElement);
+    });
+    }
+}
+
+const myToDoList = new ToDoList();
+const createToDoBtn = document.querySelector("#create-todo-btn");
+const submitBtn = document.querySelector("#submit-btn");
+const cancelBtn = document.querySelector("#cancel-btn");
+const dialog = document.querySelector("dialog");
+const defaultProject = document.querySelector("ul");
+const form = document.querySelector("form");
+
+createToDoBtn.addEventListener ("click", () => {
+    dialog.showModal();
+});
+
+submitBtn.addEventListener ("click", (event) => {
+    event.preventDefault();
+
+    const title = document.querySelector("#get-title").value;
+    const description = document.querySelector("#get-description").value;
+    const date = document.querySelector("#get-date").value;
+    const priority = document.querySelector("#get-priority").value;
+
+    myToDoList.addToDo(title, description, date, priority);
+    myToDoList.displayToDoList();
+
+    form.reset();
+    dialog.close();
+})
+
+cancelBtn.addEventListener ("click", () => {
+    dialog.close();
+})
+
+document.addEventListener("click", (e) => {
+    if (e.target.classList.contains("delete-btn")) {
+        const li = e.target.closest("li");
+        const toDoId = li.dataset.toDoId;
+
+        myToDoList.deleteToDo(toDoId);
+        myToDoList.displayToDoList();
+    }
+
+    if (e.target.classList.contains("edit-btn")) {
+        dialog.showModal();
+        // Grab data from array
+        // Populate form with data from array element
+        // Delete the current task
+        // Display new edited task
+        // Change submit button name if possible
+    }
+})
