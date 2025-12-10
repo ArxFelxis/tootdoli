@@ -1,237 +1,219 @@
 import "./style.css";
 
+// Data
 class ToDo {
-    constructor (title, description, dueDate, priority) {
+    constructor({ title, description, dueDate, priority }) {
+        this.id = crypto.randomUUID();
         this.title = title;
         this.description = description;
         this.dueDate = dueDate;
         this.priority = priority;
-        this.id = crypto.randomUUID();
     }
 }
 
 class ToDoList {
-    constructor (projectName) {
+    constructor(projectName) {
         this.projectName = projectName;
-        this.list = [];
+        this.items = [];
     }
 
-    getList() {
-        return this.list;
+    getAll() {
+        return this.items;
     }
 
-    addToDo(title, description, date, priority) {
-        const toDo = new ToDo (title, description, date, priority);
-        this.list.push(toDo);
-        return toDo;
+    add(data) {
+        const todo = new ToDo(data);
+        this.items.push(todo);
+        return todo;
     }
 
-    updateToDo(id, title, description, date, priority) {
-        const index = this.list.findIndex(toDo => toDo.id === id);
-        
-        if (index !== -1) {
-            this.list[index].title = title;
-            this.list[index].description = description;
-            this.list[index].dueDate = date;
-            this.list[index].priority = priority;
-        }
+    update(id, updatedData) {
+        const todo = this.findById(id);
+        if (!todo) return;
+
+        Object.assign(todo, updatedData);
     }
 
-    deleteToDo(toDoId) {
-        this.list = this.list.filter(toDo => toDo.id !== toDoId);
+    delete(id) {
+        this.items = this.items.filter(todo => todo.id !== id);
     }
 
-    displayToDoList() {
-        defaultProject.innerHTML = "";
-
-        this.list.forEach(toDo => {
-            const createListElement = document.createElement("li");
-            createListElement.dataset.toDoId = toDo.id;
-
-            const deleteBtn = document.createElement("button");
-            deleteBtn.textContent = "Delete";
-            deleteBtn.className = "delete-btn";
-
-            const editBtn = document.createElement("button");
-            editBtn.textContent = "Edit";
-            editBtn.className = "edit-btn";
-
-            createListElement.textContent = `
-            ${toDo.title}
-            ${toDo.description}
-            Due: ${toDo.dueDate}
-            Priority: ${toDo.priority}
-            `;
-
-            createListElement.appendChild(deleteBtn);
-            createListElement.appendChild(editBtn);
-
-            defaultProject.appendChild(createListElement);
-        });
+    findById(id) {
+        return this.items.find(todo => todo.id === id);
     }
 }
 
 class ToDoListManager {
-    constructor () {
-        this.project = new Map();
+    constructor() {
+        this.projects = new Map();
         this.activeProjectId = null;
 
         this.createProject("default", "My Project");
-
-        this.activeProjectId = "default";
+        this.setActiveProject("default");
     }
 
     createProject(id, name) {
-        if (!this.project.has(id)) {
-            this.project.set(id, new ToDoList(name));
-            return true;
-        }
-        return false;
+        if (this.projects.has(id)) return false;
+        this.projects.set(id, new ToDoList(name));
+        return true;
     }
 
     getProject(id) {
-        return this.project.get(id);
+        return this.projects.get(id);
     }
-    
+
     getActiveProject() {
-        return this.project.get(this.activeProjectId);
+        return this.getProject(this.activeProjectId);
     }
-    
+
     setActiveProject(id) {
-        if (this.project.has(id)) {
-            this.activeProjectId = id;
-            return true;
-        }
-        return false;
+        if (!this.projects.has(id)) return false;
+        this.activeProjectId = id;
+        return true;
     }
 
     getAllProjects() {
-        return Array.from(this.project.entries()).map(([id, todoList]) => ({
-            id: id,
-            name: todoList.projectName
+        return [...this.projects.entries()].map(([id, project]) => ({
+            id,
+            name: project.projectName
         }));
     }
 }
 
-const manager = new ToDoListManager();
+// UI
+const dom = {
+    createTodoBtn: document.querySelector("#create-todo-btn"),
+    submitBtn: document.querySelector("#submit-btn"),
+    cancelBtn: document.querySelector("#cancel-btn"),
+    newProjectBtn: document.querySelector("#create-project-btn"),
+    projectSelect: document.querySelector("#project-select"),
+    projectViewSelect: document.querySelector("#project-change"),
+    dialog: document.querySelector("dialog"),
+    list: document.querySelector("ul"),
+    form: document.querySelector("form"),
 
-const createToDoBtn = document.querySelector("#create-todo-btn");
-const submitBtn = document.querySelector("#submit-btn");
-const cancelBtn = document.querySelector("#cancel-btn");
-const dialog = document.querySelector("dialog");
-const defaultProject = document.querySelector("ul");
-const form = document.querySelector("form");
-let edit = null;
-const newProjectBtn = document.querySelector("#create-project-btn");
-const changeProjectView = document.querySelector("#project-change");
+    titleInput: document.querySelector("#get-title"),
+    descriptionInput: document.querySelector("#get-description"),
+    dateInput: document.querySelector("#get-date"),
+    priorityInput: document.querySelector("#get-priority")
+};
 
-function populateProjectSelect() {
-    const projectSelect = document.querySelector("#project-select");
-    projectSelect.innerHTML = "";
-    changeProjectView.innerHTML = "";
-    
-    const projects = manager.getAllProjects();
-    const currentActiveId = manager.activeProjectId;
-    
-    projects.forEach(project => {
-        // Create option for dialog dropdown
-        const option = document.createElement("option");
-        option.value = project.id;
-        option.textContent = project.name;
-        projectSelect.appendChild(option);
-        
-        // Create option for project view dropdown
-        const viewOption = document.createElement("option");
-        viewOption.value = project.id;
-        viewOption.textContent = project.name;
-        if (project.id === currentActiveId) {
-            viewOption.selected = true;
-        }
-        changeProjectView.appendChild(viewOption);
+function renderTodoList(project) {
+    dom.list.innerHTML = "";
+
+    project.getAll().forEach(todo => {
+        const li = document.createElement("li");
+        li.dataset.todoId = todo.id;
+        li.innerHTML = `
+            <strong>${todo.title}</strong>
+            <p>${todo.description}</p>
+            <p>Due: ${todo.dueDate}</p>
+            <p>Priority: ${todo.priority}</p>
+            <button class="edit-btn">Edit</button>
+            <button class="delete-btn">Delete</button>
+        `;
+
+        dom.list.appendChild(li);
     });
 }
 
-populateProjectSelect();
-manager.getActiveProject().displayToDoList();
+function renderProjectOptions(manager) {
+    const projects = manager.getAllProjects();
 
-createToDoBtn.addEventListener ("click", () => {
-    dialog.showModal();
+    dom.projectSelect.innerHTML = "";
+    dom.projectViewSelect.innerHTML = "";
+
+    projects.forEach(({ id, name }) => {
+        const option = new Option(name, id);
+        dom.projectSelect.appendChild(option);
+
+        const viewOption = new Option(name, id);
+        if (id === manager.activeProjectId) viewOption.selected = true;
+        dom.projectViewSelect.appendChild(viewOption);
+    });
+}
+
+// Events
+const manager = new ToDoListManager();
+let editingTodoId = null;
+
+renderProjectOptions(manager);
+renderTodoList(manager.getActiveProject());
+
+dom.createTodoBtn.addEventListener("click", () => {
+    dom.dialog.showModal();
 });
 
-submitBtn.addEventListener ("click", (event) => {
-    event.preventDefault();
+dom.cancelBtn.addEventListener("click", () => {
+    dom.dialog.close();
+    dom.form.reset();
+    editingTodoId = null;
+});
 
-    const title = document.querySelector("#get-title").value;
-    const description = document.querySelector("#get-description").value;
-    const date = document.querySelector("#get-date").value;
-    const priority = document.querySelector("#get-priority").value;
-    const projectSelect = document.querySelector("#project-select").value;
+dom.submitBtn.addEventListener("click", e => {
+    e.preventDefault();
 
-    if (edit !== null) {
-        // When editing, update in the currently active project
-        const activeProject = manager.getActiveProject();
-        activeProject.updateToDo(edit, title, description, date, priority);
-        
-        edit = null;
-        submitBtn.textContent = "Submit";
-        
+    const data = {
+        title: dom.titleInput.value,
+        description: dom.descriptionInput.value,
+        dueDate: dom.dateInput.value,
+        priority: dom.priorityInput.value
+    };
+
+    const project = manager.getActiveProject();
+
+    if (editingTodoId) {
+        project.update(editingTodoId, data);
     } else {
-        // When creating new, add to the selected project
-        const targetList = manager.getProject(projectSelect);
-        targetList.addToDo(title, description, date, priority);
+        project.add(data);
     }
 
-    // Display the currently active project's list
-    manager.getActiveProject().displayToDoList();
+    editingTodoId = null;
+    dom.submitBtn.textContent = "Submit";
 
-    form.reset();
-    dialog.close();
+    renderTodoList(project);
+    dom.form.reset();
+    dom.dialog.close();
 });
 
-cancelBtn.addEventListener ("click", () => {
-    dialog.close();
+dom.newProjectBtn.addEventListener("click", () => {
+    const name = prompt("Project Name");
+    if (!name) return;
+
+    const id = name.toLowerCase().replace(/\s+/g, "-");
+    manager.createProject(id, name);
+
+    renderProjectOptions(manager);
 });
 
-newProjectBtn.addEventListener ("click", () => {
-    const projectName = prompt("Project Name");
-    if (projectName) {
-        const projectId = projectName.toLowerCase().replace(/\s+/g, '-');
-        manager.createProject(projectId, projectName);
-        populateProjectSelect();
-    }
+dom.projectViewSelect.addEventListener("change", e => {
+    manager.setActiveProject(e.target.value);
+    renderTodoList(manager.getActiveProject());
 });
 
-changeProjectView.addEventListener ("change", (event) => {
-    const selectedProjectId = event.target.value;
-    manager.setActiveProject(selectedProjectId);
-    manager.getActiveProject().displayToDoList();
-});
+document.addEventListener("click", e => {
+    const li = e.target.closest("li");
+    if (!li) return;
 
-document.addEventListener("click", (e) => {
+    const project = manager.getActiveProject();
+    const todoId = li.dataset.todoId;
+
     if (e.target.classList.contains("delete-btn")) {
-        const li = e.target.closest("li");
-        const toDoId = li.dataset.toDoId;
-
-        const activeProject = manager.getActiveProject();
-        activeProject.deleteToDo(toDoId);
-        activeProject.displayToDoList();
+        project.delete(todoId);
+        renderTodoList(project);
     }
 
     if (e.target.classList.contains("edit-btn")) {
-        dialog.showModal();
-        const li = e.target.closest("li");
-        const toDoId = li.dataset.toDoId;
-        edit = toDoId;
-        
-        const activeProject = manager.getActiveProject();
-        let findToDo = activeProject.getList().find(toDo => {
-            return toDo.id == toDoId;
-        });
-        
-        document.querySelector("#get-title").value = findToDo.title;
-        document.querySelector("#get-description").value = findToDo.description;
-        document.querySelector("#get-date").value = findToDo.dueDate;
-        document.querySelector("#get-priority").value = findToDo.priority;
-        submitBtn.textContent = "Save";
+        const todo = project.findById(todoId);
+        if (!todo) return;
+
+        editingTodoId = todoId;
+        dom.titleInput.value = todo.title;
+        dom.descriptionInput.value = todo.description;
+        dom.dateInput.value = todo.dueDate;
+        dom.priorityInput.value = todo.priority;
+
+        dom.submitBtn.textContent = "Save";
+        dom.dialog.showModal();
     }
 });
