@@ -15,10 +15,25 @@ class ToDoList {
         this.list =[];
     }
 
+    getList() {
+        return this.list;
+    }
+
     addToDo(title, description, date, priority) {
         const toDo = new ToDo (title, description, date, priority);
         this.list.push(toDo);
         return toDo;
+    }
+
+    updateToDo(id, title, description, date, priority) {
+        const index = this.list.findIndex(toDo => toDo.id === id);
+        
+        if (index !== -1) {
+            this.list[index].title = title;
+            this.list[index].description = description;
+            this.list[index].dueDate = date;
+            this.list[index].priority = priority;
+        }
     }
 
     deleteToDo(toDoId) {
@@ -55,6 +70,7 @@ class ToDoList {
     }
 }
 
+// Maybe class all this query selector maybe...
 const myToDoList = new ToDoList();
 const createToDoBtn = document.querySelector("#create-todo-btn");
 const submitBtn = document.querySelector("#submit-btn");
@@ -62,6 +78,7 @@ const cancelBtn = document.querySelector("#cancel-btn");
 const dialog = document.querySelector("dialog");
 const defaultProject = document.querySelector("ul");
 const form = document.querySelector("form");
+let edit = null;
 
 createToDoBtn.addEventListener ("click", () => {
     dialog.showModal();
@@ -75,7 +92,16 @@ submitBtn.addEventListener ("click", (event) => {
     const date = document.querySelector("#get-date").value;
     const priority = document.querySelector("#get-priority").value;
 
-    myToDoList.addToDo(title, description, date, priority);
+    if (edit !== null) {
+        myToDoList.updateToDo(edit, title, description, date, priority)
+        
+        edit = null;
+        submitBtn.textContent = "Submit";
+        
+    } else {
+        myToDoList.addToDo(title, description, date, priority);
+    }
+
     myToDoList.displayToDoList();
 
     form.reset();
@@ -97,10 +123,16 @@ document.addEventListener("click", (e) => {
 
     if (e.target.classList.contains("edit-btn")) {
         dialog.showModal();
-        // Grab data from array
-        // Populate form with data from array element
-        // Delete the current task
-        // Display new edited task
-        // Change submit button name if possible
+        const li = e.target.closest("li");
+        const toDoId = li.dataset.toDoId;
+        edit = toDoId;
+        let findToDo = myToDoList.getList().find(toDo => {
+            return toDo.id == toDoId;
+        })
+        document.querySelector("#get-title").value = findToDo.title;
+        document.querySelector("#get-description").value = findToDo.description;
+        document.querySelector("#get-date").value = findToDo.dueDate;
+        document.querySelector("#get-priority").value = findToDo.priority;
+        submitBtn.textContent = "Save";
     }
 })
