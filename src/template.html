@@ -8,6 +8,7 @@
 <body>
     <aside>
         <button type="button" id="create-todo-btn">Create To Do</button>
+        <button type="button" id="create-project-btn">New Project</button>
     </aside>
     <dialog>
         <form method="dialog">
@@ -20,11 +21,16 @@
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
             </select>
+            <select name="project-select" id="project-select"></select>
             <button type="button" id="cancel-btn">Cancel</button>
             <button type="submit" id="submit-btn">Create</button>
         </form>
     </dialog>
     <main>
+        <h2>Current Project:
+            <label for="project-change"></label>
+            <select id="project-change"></select>
+        </h2>
         <ul>
             
         </ul>
