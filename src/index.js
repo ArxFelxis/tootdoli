@@ -174,11 +174,12 @@ dom.submitBtn.addEventListener("click", e => {
     }
 
     editingTodoId = null;
-    dom.submitBtn.textContent = "Submit";
+    dom.submitBtn.textContent = "Create";
 
     renderTodoList(project);
     dom.form.reset();
     dom.dialog.close();
+    dom.submitBtn.disabled = true;
 });
 
 dom.newProjectBtn.addEventListener("click", () => {

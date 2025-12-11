@@ -102,8 +102,12 @@ button {
     margin-left: 0.6rem;
 }
 
-#create-todo-btn>img, #create-project-btn>img, .edit-img, .delete-img {
+#create-todo-btn>img, #create-project-btn>img {
     width: 2vw;
+}
+
+.edit-img, .delete-img {
+    width: 1.2rem;
 }
 
 /* Main */
