@@ -1,5 +1,6 @@
 import "./style.css";
-
+import editSvg from "./assests/edit.svg"
+import deleteSvg from "./assests/delete.svg"
 // Data
 class ToDo {
     constructor({ title, description, dueDate, priority }) {
@@ -105,12 +106,15 @@ function renderTodoList(project) {
         const li = document.createElement("li");
         li.dataset.todoId = todo.id;
         li.innerHTML = `
-            <strong>${todo.title}</strong>
-            <p>${todo.description}</p>
-            <p>Due: ${todo.dueDate}</p>
-            <p>Priority: ${todo.priority}</p>
-            <button class="edit-btn">Edit</button>
-            <button class="delete-btn">Delete</button>
+            <p id="title">${todo.title}</p>
+            <p id="desc">${todo.description}</p>
+            <p id="date">${todo.dueDate}</p>
+            <button class="edit-btn">
+                <img src="${editSvg}" alt="" class="edit-img">
+            </button>
+            <button class="delete-btn">
+                <img src="${deleteSvg}" alt="" class="delete-img">
+            </button>
         `;
 
         dom.list.appendChild(li);
@@ -136,6 +140,7 @@ function renderProjectOptions(manager) {
 // Events
 const manager = new ToDoListManager();
 let editingTodoId = null;
+dom.submitBtn.disabled = true;
 
 renderProjectOptions(manager);
 renderTodoList(manager.getActiveProject());
@@ -191,6 +196,14 @@ dom.projectViewSelect.addEventListener("change", e => {
     renderTodoList(manager.getActiveProject());
 });
 
+dom.titleInput.addEventListener ("keyup", (event) => {
+    const value = event.currentTarget.value;
+
+    if (value !== "") {
+        dom.submitBtn.disabled = false;
+    }
+})
+
 document.addEventListener("click", e => {
     const li = e.target.closest("li");
     if (!li) return;
@@ -198,12 +211,12 @@ document.addEventListener("click", e => {
     const project = manager.getActiveProject();
     const todoId = li.dataset.todoId;
 
-    if (e.target.classList.contains("delete-btn")) {
+    if (e.target.classList.contains("delete-img")) {
         project.delete(todoId);
         renderTodoList(project);
     }
 
-    if (e.target.classList.contains("edit-btn")) {
+    if (e.target.classList.contains("edit-img")) {
         const todo = project.findById(todoId);
         if (!todo) return;
 

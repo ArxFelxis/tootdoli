@@ -1,0 +1,144 @@
+/* 1. Use a more-intuitive box-sizing model */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* 2. Remove default margin */
+* {
+  margin: 0;
+}
+
+/* 3. Enable keyword animations */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    interpolate-size: allow-keywords;
+  }
+}
+
+body {
+  /* 4. Add accessible line-height */
+  line-height: 1.5;
+  /* 5. Improve text rendering */
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 6. Improve media defaults */
+img, picture, video, canvas, svg {
+  display: block;
+  max-width: 100%   ;
+}
+
+/* 7. Inherit fonts for form controls */
+input, button, textarea, select {
+  font: inherit;
+}
+
+/* 8. Avoid text overflows */
+p, h1, h2, h3, h4, h5, h6 {
+  overflow-wrap: break-word;
+}
+
+/* 9. Improve line wrapping */
+p {
+  text-wrap: pretty;
+}
+h1, h2, h3, h4, h5, h6 {
+  text-wrap: balance;
+}
+
+/*
+  10. Create a root stacking context
+*/
+#root, #__next {
+  isolation: isolate;
+}
+
+body>div {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    grid-template-areas: 
+        "aside main"
+    ;
+    font-family: "Roboto", sans-serif;
+}
+
+/* Sidebar */
+
+aside {
+    grid-area: aside;
+    background-color: hsl(67, 50%, 90%);
+    height: 100vh;
+    display: grid;
+    grid-template-rows: repeat(3, 5rem) 1fr;
+}
+
+aside>div {
+    display: flex;
+}
+
+aside>div>p {
+    font-size: 1.5rem;
+    font-weight: 600;
+    font-style: italic;
+    align-self: center;
+}
+
+#logo {
+    width: 5vw;
+}
+
+/* Sidebar Buttons */
+
+button {
+    border: none;
+    background: none;
+    cursor: pointer;
+}
+
+#create-todo-btn, #create-project-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: 0.6rem;
+}
+
+#create-todo-btn>img, #create-project-btn>img, .edit-img, .delete-img {
+    width: 2vw;
+}
+
+/* Main */
+
+main {
+    grid-area: main;
+}
+
+main>p {
+    font-size: 1.3rem;
+    font-style: italic;
+    font-weight: 500;
+    margin-left: 1rem;
+    margin-top: 1.25rem;
+}
+
+ul {
+    margin-top: 1rem;
+    margin-left: 3rem;
+    padding: 0;
+}
+
+li {
+    list-style: none;
+}
+
+li>#title {
+    font-size: 1rem;
+}
+
+li>#desc {
+    font-size: 0.9rem;
+    color: hsl(0, 0%, 30%);
+}
+
+li>#date {
+    font-size: 0.8rem;
+}

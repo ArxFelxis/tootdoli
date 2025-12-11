@@ -3,37 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,
+    100..900;1,14..32,100..900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <title>Tootdoli</title>
 </head>
 <body>
-    <aside>
-        <button type="button" id="create-todo-btn">Create To Do</button>
-        <button type="button" id="create-project-btn">New Project</button>
-    </aside>
-    <dialog>
-        <form method="dialog">
-            <input type="text" name="get-title" id="get-title" placeholder="Title">
-            <input type="text" name="get-description" id="get-description" placeholder="Description">
-            <input type="date" name="get-date" id="get-date">
-            <select name="get-priority" id="get-priority">
-                <option value="">Priority</option>
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-            </select>
-            <select name="project-select" id="project-select"></select>
-            <button type="button" id="cancel-btn">Cancel</button>
-            <button type="submit" id="submit-btn">Create</button>
-        </form>
-    </dialog>
-    <main>
-        <h2>Current Project:
-            <label for="project-change"></label>
-            <select id="project-change"></select>
-        </h2>
-        <ul>
-            
-        </ul>
-    </main>
+    <div>
+        <aside>
+            <div>
+                <img src="/src/assests/my-logo.png" alt="" id="logo">
+                <p>Tootdoli</p>
+            </div>
+            <button type="button" id="create-todo-btn">
+                <img src="/src/assests/add-task.svg" alt="" id="add-task">
+                Add Task
+            </button>
+            <button type="button" id="create-project-btn">
+                <img src="/src/assests/add-circle.svg" alt="" id="add-circle">
+                New Project
+            </button>
+        </aside>
+        <dialog>
+            <form method="dialog">
+                <input type="text" name="get-title" id="get-title" placeholder="Title">
+                <input type="text" name="get-description" id="get-description" placeholder="Description">
+                <input type="date" name="get-date" id="get-date">
+                <select name="get-priority" id="get-priority">
+                    <option value="">Priority</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+                <select name="project-select" id="project-select"></select>
+                <button type="button" id="cancel-btn">Cancel</button>
+                <button type="submit" id="submit-btn">Create</button>
+            </form>
+        </dialog>
+        <main>
+            <p>Current Project:
+                <label for="project-change"></label>
+                <select id="project-change"></select>
+            </p>
+            <ul>
+        
+            </ul>
+        </main>
+    </div>
 </body>
 </html>
