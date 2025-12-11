@@ -1,6 +1,8 @@
 import "./style.css";
 import editSvg from "./assests/edit.svg"
 import deleteSvg from "./assests/delete.svg"
+import {format} from "date-fns"
+
 // Data
 class ToDo {
     constructor({ title, description, dueDate, priority }) {
@@ -108,7 +110,7 @@ function renderTodoList(project) {
         li.innerHTML = `
             <p id="title">${todo.title}</p>
             <p id="desc">${todo.description}</p>
-            <p id="date">${todo.dueDate}</p>
+            <p id="date">${format(todo.dueDate, "d MMM")} (${todo.priority})</p>
             <button class="edit-btn">
                 <img src="${editSvg}" alt="" class="edit-img">
             </button>
@@ -140,7 +142,6 @@ function renderProjectOptions(manager) {
 // Events
 const manager = new ToDoListManager();
 let editingTodoId = null;
-dom.submitBtn.disabled = true;
 
 renderProjectOptions(manager);
 renderTodoList(manager.getActiveProject());
@@ -197,13 +198,23 @@ dom.projectViewSelect.addEventListener("change", e => {
     renderTodoList(manager.getActiveProject());
 });
 
-dom.titleInput.addEventListener ("keyup", (event) => {
-    const value = event.currentTarget.value;
+(function () {
+    let eventCounter = 0;
+    dom.submitBtn.disabled = true;
 
-    if (value !== "") {
-        dom.submitBtn.disabled = false;
+    function validateAndEnable(event){
+        const value = event.currentTarget.value;
+        eventCounter++;
+
+        if (value !== "" && eventCounter === 2) {
+            dom.submitBtn.disabled = false;
+            eventCounter = 0;
+        }
     }
-})
+
+    dom.dateInput.addEventListener("change", validateAndEnable);
+    dom.titleInput.addEventListener("keyup", validateAndEnable);
+})();
 
 document.addEventListener("click", e => {
     const li = e.target.closest("li");
@@ -228,6 +239,7 @@ document.addEventListener("click", e => {
         dom.priorityInput.value = todo.priority;
 
         dom.submitBtn.textContent = "Save";
+        dom.submitBtn.disabled = false;
         dom.dialog.showModal();
     }
 });
