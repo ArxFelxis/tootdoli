@@ -168,9 +168,15 @@ dom.submitBtn.addEventListener("click", e => {
 
     const project = manager.getProject(dom.projectFormSelect.value);
 
-    if (editingTodoId) {
+    if (editingTodoId && dom.projectViewSelect.value !== dom.projectFormSelect.value) {
+            const originalProject = manager.getActiveProject();
+            originalProject.delete(editingTodoId);
+            project.add(data);
+    }
+    else if (editingTodoId) {
         project.update(editingTodoId, data);
-    } else {
+    } 
+    else {
         project.add(data);
     }
 
@@ -179,9 +185,12 @@ dom.submitBtn.addEventListener("click", e => {
 
     if (dom.projectViewSelect.value !== dom.projectFormSelect.value) {
         dom.projectViewSelect.value = dom.projectFormSelect.value;
+        manager.setActiveProject(dom.projectViewSelect.value);
+        renderTodoList(manager.getActiveProject());
+    } else {
+        renderTodoList(project);
     }
 
-    renderTodoList(project);
     dom.form.reset();
     dom.dialog.close();
     dom.submitBtn.disabled = true;
@@ -241,6 +250,7 @@ document.addEventListener("click", e => {
         dom.descriptionInput.value = todo.description;
         dom.dateInput.value = todo.dueDate;
         dom.priorityInput.value = todo.priority;
+        dom.projectFormSelect.value = dom.projectViewSelect.value;
 
         dom.submitBtn.textContent = "Save";
         dom.submitBtn.disabled = false;
