@@ -89,8 +89,8 @@ const dom = {
     submitBtn: document.querySelector("#submit-btn"),
     cancelBtn: document.querySelector("#cancel-btn"),
     newProjectBtn: document.querySelector("#create-project-btn"),
-    projectSelect: document.querySelector("#project-select"),
-    projectViewSelect: document.querySelector("#project-change"),
+    projectFormSelect: document.querySelector("#project-select"), // form
+    projectViewSelect: document.querySelector("#project-change"), // main / dropdown
     dialog: document.querySelector("dialog"),
     list: document.querySelector("ul"),
     form: document.querySelector("form"),
@@ -126,12 +126,12 @@ function renderTodoList(project) {
 function renderProjectOptions(manager) {
     const projects = manager.getAllProjects();
 
-    dom.projectSelect.innerHTML = "";
+    dom.projectFormSelect.innerHTML = "";
     dom.projectViewSelect.innerHTML = "";
 
     projects.forEach(({ id, name }) => {
         const option = new Option(name, id);
-        dom.projectSelect.appendChild(option);
+        dom.projectFormSelect.appendChild(option);
 
         const viewOption = new Option(name, id);
         if (id === manager.activeProjectId) viewOption.selected = true;
@@ -166,7 +166,7 @@ dom.submitBtn.addEventListener("click", e => {
         priority: dom.priorityInput.value
     };
 
-    const project = manager.getActiveProject();
+    const project = manager.getProject(dom.projectFormSelect.value);
 
     if (editingTodoId) {
         project.update(editingTodoId, data);
@@ -176,6 +176,10 @@ dom.submitBtn.addEventListener("click", e => {
 
     editingTodoId = null;
     dom.submitBtn.textContent = "Create";
+
+    if (dom.projectViewSelect.value !== dom.projectFormSelect.value) {
+        dom.projectViewSelect.value = dom.projectFormSelect.value;
+    }
 
     renderTodoList(project);
     dom.form.reset();
