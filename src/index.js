@@ -2,6 +2,7 @@ import "./style.css";
 import editSvg from "./assests/edit.svg"
 import deleteSvg from "./assests/delete.svg"
 import {format} from "date-fns"
+import { de } from "date-fns/locale";
 
 // Data
 class ToDo {
@@ -39,6 +40,7 @@ class ToDoList {
 
     delete(id) {
         this.items = this.items.filter(todo => todo.id !== id);
+        localStorage.removeItem(id);
     }
 
     findById(id) {
@@ -81,6 +83,10 @@ class ToDoListManager {
             name: project.projectName
         }));
     }
+
+    deleteProject(id) {
+        return this.projects.delete(id);
+    }
 }
 
 // UI
@@ -89,11 +95,12 @@ const dom = {
     submitBtn: document.querySelector("#submit-btn"),
     cancelBtn: document.querySelector("#cancel-btn"),
     newProjectBtn: document.querySelector("#create-project-btn"),
-    projectFormSelect: document.querySelector("#project-select"), // form
-    projectViewSelect: document.querySelector("#project-change"), // main / dropdown
+    projectFormSelect: document.querySelector("#project-select"), 
+    projectViewSelect: document.querySelector("#project-change"),
     dialog: document.querySelector("dialog"),
-    list: document.querySelector("ul"),
+    list: document.querySelector(".main-ul"),
     form: document.querySelector("form"),
+    allProjects: document.querySelector("#all-projects"),
 
     titleInput: document.querySelector("#get-title"),
     descriptionInput: document.querySelector("#get-description"),
@@ -139,10 +146,46 @@ function renderProjectOptions(manager) {
     });
 }
 
+function renderSidebarProjects(manager) {
+    dom.allProjects.innerHTML = "";
+
+    manager.getAllProjects().forEach(({ id, name }) => {
+        const li = document.createElement("li");
+        li.dataset.projectId = id;
+
+        li.innerHTML = `
+            <span>${name}</span>
+        `;
+
+        if (id !== "default") {
+            const deleteBtn = document.createElement("button")
+            deleteBtn.className = "delete-project-btn";
+            deleteBtn.textContent = "✕";
+            li.appendChild(deleteBtn);
+        }
+
+        if (id === manager.activeProjectId) {
+            li.classList.add("active");
+        }
+
+        dom.allProjects.appendChild(li);
+    });
+}
+
+function deleteProject(projectId) {
+    manager.deleteProject(projectId);
+
+    if (projectId === manager.activeProjectId) {
+        manager.setActiveProject("default");
+    }
+
+    renderSidebarProjects(manager);
+    renderTodoList(manager.getActiveProject());
+}
+
 // Events
 const manager = new ToDoListManager();
 let editingTodoId = null;
-
 renderProjectOptions(manager);
 renderTodoList(manager.getActiveProject());
 
@@ -204,11 +247,13 @@ dom.newProjectBtn.addEventListener("click", () => {
     manager.createProject(id, name);
 
     renderProjectOptions(manager);
+    renderSidebarProjects(manager)
 });
 
 dom.projectViewSelect.addEventListener("change", e => {
     manager.setActiveProject(e.target.value);
     renderTodoList(manager.getActiveProject());
+    renderSidebarProjects(manager);
 });
 
 (function () {
@@ -229,7 +274,7 @@ dom.projectViewSelect.addEventListener("change", e => {
     dom.titleInput.addEventListener("keyup", validateAndEnable);
 })();
 
-document.addEventListener("click", e => {
+dom.list.addEventListener("click", e => {
     const li = e.target.closest("li");
     if (!li) return;
 
@@ -255,5 +300,25 @@ document.addEventListener("click", e => {
         dom.submitBtn.textContent = "Save";
         dom.submitBtn.disabled = false;
         dom.dialog.showModal();
+    }
+});
+
+dom.allProjects.addEventListener("click", e => {
+    const li = e.target.closest("li");
+    if (!li) return;
+
+    const projectId = li.dataset.projectId;
+
+    if (e.target.classList.contains("delete-project-btn")) {
+        deleteProject(projectId);
+
+        if (projectId === manager.activeProjectId) {
+            manager.setActiveProject("default");
+        }
+
+        renderSidebarProjects(manager);
+        renderProjectOptions(manager);
+        renderTodoList(manager.getActiveProject());
+        return;
     }
 });
