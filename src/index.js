@@ -136,74 +136,83 @@ const dom = {
     priorityInput: document.querySelector("#get-priority")
 };
 
-function renderTodoList(project) {
-    dom.list.innerHTML = "";
-    project.getAll().forEach(todo => {
-        const li = document.createElement("li");
-        li.dataset.todoId = todo.id;
-        li.innerHTML = `
-            <p id="title">${todo.title}</p>
-            <p id="desc">${todo.description}</p>
-            <p id="date">${format(todo.dueDate, "d MMM")} (${todo.priority})</p>
-            <button class="edit-btn">
-                <img src="${editSvg}" alt="" class="edit-img">
-            </button>
-            <button class="delete-btn">
-                <img src="${deleteSvg}" alt="" class="delete-img">
-            </button>
-        `;
-        dom.list.appendChild(li);
-    });
-}
-
-function renderProjectOptions(manager) {
-    const projects = manager.getAllProjects();
-    dom.projectFormSelect.innerHTML = "";
-    dom.projectViewSelect.innerHTML = "";
-    projects.forEach(({ id, name }) => {
-        const option = new Option(name, id);
-        dom.projectFormSelect.appendChild(option);
-        const viewOption = new Option(name, id);
-        if (id === manager.activeProjectId) viewOption.selected = true;
-        dom.projectViewSelect.appendChild(viewOption);
-    });
-}
-
-function renderSidebarProjects(manager) {
-    dom.allProjects.innerHTML = "";
-    manager.getAllProjects().forEach(({ id, name }) => {
-        const li = document.createElement("li");
-        li.dataset.projectId = id;
-        li.innerHTML = `<span>${name}</span>`;
-        if (id !== "default") {
-            const deleteBtn = document.createElement("button");
-            deleteBtn.className = "delete-project-btn";
-            deleteBtn.textContent = "✕";
-            li.appendChild(deleteBtn);
-        }
-        if (id === manager.activeProjectId) {
-            li.classList.add("active");
-        }
-        dom.allProjects.appendChild(li);
-    });
-}
-
-function deleteProject(projectId) {
-    manager.deleteProject(projectId);
-    if (projectId === manager.activeProjectId) {
-        manager.setActiveProject("default");
+const todoRenderers = (function() {
+    function renderTodoList(project) {
+        dom.list.innerHTML = "";
+        project.getAll().forEach(todo => {
+            const li = document.createElement("li");
+            li.dataset.todoId = todo.id;
+            li.innerHTML = `
+                <p id="title">${todo.title}</p>
+                <p id="desc">${todo.description}</p>
+                <p id="date">${format(todo.dueDate, "d MMM")} (${todo.priority})</p>
+                <button class="edit-btn">
+                    <img src="${editSvg}" alt="" class="edit-img">
+                </button>
+                <button class="delete-btn">
+                    <img src="${deleteSvg}" alt="" class="delete-img">
+                </button>
+            `;
+            dom.list.appendChild(li);
+        });
     }
-    Storage.save(manager);
-    renderSidebarProjects(manager);
-    renderTodoList(manager.getActiveProject());
-}
+
+    function renderProjectOptions(manager) {
+        const projects = manager.getAllProjects();
+        dom.projectFormSelect.innerHTML = "";
+        dom.projectViewSelect.innerHTML = "";
+        projects.forEach(({ id, name }) => {
+            const option = new Option(name, id);
+            dom.projectFormSelect.appendChild(option);
+            const viewOption = new Option(name, id);
+            if (id === manager.activeProjectId) viewOption.selected = true;
+            dom.projectViewSelect.appendChild(viewOption);
+        });
+    }
+
+    function renderSidebarProjects(manager) {
+        dom.allProjects.innerHTML = "";
+        manager.getAllProjects().forEach(({ id, name }) => {
+            const li = document.createElement("li");
+            li.dataset.projectId = id;
+            li.innerHTML = `<span>${name}</span>`;
+            if (id !== "default") {
+                const deleteBtn = document.createElement("button");
+                deleteBtn.className = "delete-project-btn";
+                deleteBtn.textContent = "✕";
+                li.appendChild(deleteBtn);
+            }
+            if (id === manager.activeProjectId) {
+                li.classList.add("active");
+            }
+            dom.allProjects.appendChild(li);
+        });
+    }
+
+    function deleteProject(projectId) {
+        manager.deleteProject(projectId);
+        if (projectId === manager.activeProjectId) {
+            manager.setActiveProject("default");
+        }
+        Storage.save(manager);
+        renderSidebarProjects(manager);
+        renderTodoList(manager.getActiveProject());
+    }
+
+    return {
+        renderTodoList,
+        renderProjectOptions,
+        renderSidebarProjects,
+        deleteProject
+    };
+})();
 
 // Events
 const manager = new ToDoListManager();
 let editingTodoId = null;
-renderProjectOptions(manager);
-renderSidebarProjects(manager);
-renderTodoList(manager.getActiveProject());
+todoRenderers.renderProjectOptions(manager);
+todoRenderers.renderSidebarProjects(manager);
+todoRenderers.renderTodoList(manager.getActiveProject());
 
 dom.createTodoBtn.addEventListener("click", () => dom.dialog.showModal());
 dom.cancelBtn.addEventListener("click", () => { dom.dialog.close(); dom.form.reset(); editingTodoId = null; });
@@ -231,9 +240,9 @@ dom.submitBtn.addEventListener("click", e => {
     if (dom.projectViewSelect.value !== dom.projectFormSelect.value) {
         dom.projectViewSelect.value = dom.projectFormSelect.value;
         manager.setActiveProject(dom.projectViewSelect.value);
-        renderTodoList(manager.getActiveProject());
+        todoRenderers.renderTodoList(manager.getActiveProject());
     } else {
-        renderTodoList(project);
+        todoRenderers.renderTodoList(project);
     }
     Storage.save(manager);
     dom.form.reset();
@@ -246,14 +255,14 @@ dom.newProjectBtn.addEventListener("click", () => {
     if (!name) return;
     const id = name.toLowerCase().replace(/\s+/g, "-");
     manager.createProject(id, name);
-    renderProjectOptions(manager);
-    renderSidebarProjects(manager);
+    todoRenderers.renderProjectOptions(manager);
+    todoRenderers.renderSidebarProjects(manager);
 });
 
 dom.projectViewSelect.addEventListener("change", e => {
     manager.setActiveProject(e.target.value);
-    renderTodoList(manager.getActiveProject());
-    renderSidebarProjects(manager);
+    todoRenderers.renderTodoList(manager.getActiveProject());
+    todoRenderers.renderSidebarProjects(manager);
 });
 
 (function () {
@@ -279,7 +288,7 @@ dom.list.addEventListener("click", e => {
     if (e.target.classList.contains("delete-img")) {
         project.delete(todoId);
         Storage.save(manager);
-        renderTodoList(project);
+        todoRenderers.renderTodoList(project);
     }
     if (e.target.classList.contains("edit-img")) {
         const todo = project.findById(todoId);
@@ -305,9 +314,9 @@ dom.allProjects.addEventListener("click", e => {
         if (projectId === manager.activeProjectId) {
             manager.setActiveProject("default");
         }
-        renderSidebarProjects(manager);
-        renderProjectOptions(manager);
-        renderTodoList(manager.getActiveProject());
+        todoRenderers.renderSidebarProjects(manager);
+        todoRenderers.renderProjectOptions(manager);
+        todoRenderers.renderTodoList(manager.getActiveProject());
         return;
     }
 });
