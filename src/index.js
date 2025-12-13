@@ -302,7 +302,7 @@ dom.list.addEventListener("click", e => {
         dom.submitBtn.textContent = "Save";
         dom.submitBtn.disabled = false;
         dom.dialog.showModal();
-    }
+    }   
 });
 
 dom.allProjects.addEventListener("click", e => {
@@ -310,7 +310,7 @@ dom.allProjects.addEventListener("click", e => {
     if (!li) return;
     const projectId = li.dataset.projectId;
     if (e.target.classList.contains("delete-project-btn")) {
-        deleteProject(projectId);
+        todoRenderers.deleteProject(projectId);
         if (projectId === manager.activeProjectId) {
             manager.setActiveProject("default");
         }
